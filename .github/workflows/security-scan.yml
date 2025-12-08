@@ -1,0 +1,32 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    name: NautScanner Security Scan
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run NautScanner
+        uses: ./.github/actions/nautscanner
+        with:
+          # Point to your local API (when testing locally, use ngrok or similar)
+          # For production, use your hosted API URL
+          api_url: http://localhost:8081/v1
+
+          # Optional: Fail the build if critical vulnerabilities are found
+          fail_on_critical: true
+
+          # Only report medium severity and above
+          min_severity: medium

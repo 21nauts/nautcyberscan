@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nautscanner-db
+    environment:
+      POSTGRES_USER: nautscanner
+      POSTGRES_PASSWORD: nautscanner
+      POSTGRES_DB: nautscanner
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nautscanner"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nautscanner-api
+    environment:
+      DATABASE_URL: postgres://nautscanner:nautscanner@postgres:5432/nautscanner?sslmode=disable
+      SERVER_PORT: 8080
+      ENVIRONMENT: development
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nautscanner-web
+    environment:
+      - API_URL=http://backend:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

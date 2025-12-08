@@ -1,0 +1,28 @@
+name: NautScanner Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    name: Scan Dependencies
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run NautScanner
+        uses: nautcyberscanner/scan-action@v1
+        with:
+          api_key: ${{ secrets.NAUTSCANNER_API_KEY }}
+          # Optional: fail build on critical vulnerabilities
+          fail_on_critical: true
+          # Optional: minimum severity to report (low, medium, high, critical)
+          min_severity: medium
