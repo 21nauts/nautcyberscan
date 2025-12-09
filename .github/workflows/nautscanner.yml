@@ -19,9 +19,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run NautScanner
-        uses: nautcyberscanner/scan-action@v1
+        uses: ./.github/actions/nautscanner
         with:
-          api_key: ${{ secrets.NAUTSCANNER_API_KEY }}
+          # ngrok URL to access local API from GitHub Actions
+          api_url: https://18a399fefe80.ngrok-free.app/v1
           # Optional: fail build on critical vulnerabilities
           fail_on_critical: true
           # Optional: minimum severity to report (low, medium, high, critical)
