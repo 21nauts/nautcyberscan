@@ -22,7 +22,7 @@ jobs:
         uses: ./.github/actions/nautscanner
         with:
           # ngrok URL to access local API from GitHub Actions
-          api_url: https://18a399fefe80.ngrok-free.app/v1
+          api_url: https://18a399fefe80.ngrok-free.app/api/v1
 
           # Optional: Fail the build if critical vulnerabilities are found
           fail_on_critical: true
