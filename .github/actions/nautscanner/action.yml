@@ -83,26 +83,26 @@ runs:
       shell: bash
       run: |
         if [ -f "requirements.txt" ]; then
-          cat > extract_python_deps.py << 'PYEOF'
-import re
-import json
-deps = []
-with open("requirements.txt") as f:
-    for line in f:
-        line = line.strip()
-        if line and not line.startswith("#"):
-            # Match both == and >= style dependencies
-            match = re.match(r"^([a-zA-Z0-9\-_]+)([><=]+)([0-9\.]+)", line)
-            if match:
-                deps.append({
-                    "name": match.group(1),
-                    "version": match.group(3),
-                    "type": "direct"
-                })
-print(json.dumps(deps, indent=2))
-PYEOF
-          python3 extract_python_deps.py > dependencies-python.json
-          rm extract_python_deps.py
+          echo "[" > dependencies-python.json
+          first=true
+          while IFS= read -r line; do
+            # Skip comments and empty lines
+            if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
+              continue
+            fi
+            # Extract package name and version
+            if [[ "$line" =~ ^([a-zA-Z0-9_-]+)([><=]+)([0-9.]+) ]]; then
+              name="${BASH_REMATCH[1]}"
+              version="${BASH_REMATCH[3]}"
+              if [ "$first" = false ]; then
+                echo "," >> dependencies-python.json
+              fi
+              echo "  {\"name\": \"$name\", \"version\": \"$version\", \"type\": \"direct\"}" >> dependencies-python.json
+              first=false
+            fi
+          done < requirements.txt
+          echo "" >> dependencies-python.json
+          echo "]" >> dependencies-python.json
         fi
 
     - name: Extract dependencies (Go)
