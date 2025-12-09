@@ -83,23 +83,23 @@ runs:
       shell: bash
       run: |
         if [ -f "requirements.txt" ]; then
-          python3 -c "
-import re
-import json
-deps = []
-with open('requirements.txt') as f:
-    for line in f:
-        line = line.strip()
-        if line and not line.startswith('#'):
-            match = re.match(r'^([a-zA-Z0-9\-_]+)==([0-9\.]+)', line)
-            if match:
-                deps.append({
-                    'name': match.group(1),
-                    'version': match.group(2),
-                    'type': 'direct'
-                })
-print(json.dumps(deps, indent=2))
-          " > dependencies-python.json
+          python3 -c '
+          import re
+          import json
+          deps = []
+          with open("requirements.txt") as f:
+              for line in f:
+                  line = line.strip()
+                  if line and not line.startswith("#"):
+                      match = re.match(r"^([a-zA-Z0-9\-_]+)==([0-9\.]+)", line)
+                      if match:
+                          deps.append({
+                              "name": match.group(1),
+                              "version": match.group(2),
+                              "type": "direct"
+                          })
+          print(json.dumps(deps, indent=2))
+          ' > dependencies-python.json
         fi
 
     - name: Extract dependencies (Go)
