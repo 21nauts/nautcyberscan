@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"time"
 
+	"github.com/nautcyberscanner/nautscanner/internal/osv"
 	"github.com/nautcyberscanner/nautscanner/pkg/config"
 	"github.com/nautcyberscanner/nautscanner/pkg/models"
 )
@@ -36,14 +38,25 @@ func (h *ScanHandler) SubmitScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Implement vulnerability matching logic
-	// For now, return a placeholder response
-	response := models.ScanResponse{
-		ScanID:              "scan-" + scanReq.RepoID,
-		VulnerabilitiesFound: 0,
-		Vulnerabilities:     []models.VulnerabilityMatch{},
-		Timestamp:           scanReq.Timestamp,
+	// Create OSV client
+	osvClient := osv.New()
+
+	// Query OSV for vulnerabilities
+	vulnerabilities, err := osvClient.BatchQuery(scanReq.Dependencies, scanReq.Ecosystem)
+	if err != nil {
+		// Log error but don't fail the scan
+		vulnerabilities = []models.VulnerabilityMatch{}
 	}
+
+	// Create response
+	response := models.ScanResponse{
+		ScanID:               "scan-" + scanReq.RepoID,
+		VulnerabilitiesFound: len(vulnerabilities),
+		Vulnerabilities:      vulnerabilities,
+		Timestamp:            time.Now(),
+	}
+
+	// TODO: Save scan results to database
 
 	respondJSON(w, http.StatusOK, response)
 }
